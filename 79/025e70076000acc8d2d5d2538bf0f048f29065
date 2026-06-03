@@ -1,0 +1,28 @@
+README.md
+  s_641bfa56c3c996::t_bd7fec435570e7 71
+  s_641bfa56c3c996::t_85bfb00ade8086 25-26,28-30
+  s_641bfa56c3c996::t_7bf96ace8b6776 27
+  s_641bfa56c3c996::t_fb1cb6c564deea 51-52
+SKILL.md
+  s_641bfa56c3c996::t_f83f4b916d96a4 36-41,46-49
+scripts/fetch-packages.sh
+  s_641bfa56c3c996::t_b7feb9b85a528a 85-93,96
+  s_641bfa56c3c996::t_bd72a42732c6fd 107,110-117,120,124
+  s_641bfa56c3c996::t_ca6ef640f96bbd 28-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "79025e70076000acc8d2d5d2538bf0f048f29065",
+  "prompts": {},
+  "sessions": {
+    "s_641bfa56c3c996": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1675f37d-f023-4923-8edb-55da7f72e211",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "iAmMccc <562863544@qq.com>"
+    }
+  }
+}
