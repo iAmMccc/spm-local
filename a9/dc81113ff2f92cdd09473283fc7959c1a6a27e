@@ -1,0 +1,27 @@
+VERSION
+  s_641bfa56c3c996::t_20b0cef61bd1d8 1
+README.md
+  s_641bfa56c3c996::t_e4946ad10a211b 32-33
+scripts/fetch-packages.sh
+  s_641bfa56c3c996::t_511e094126707f 69-71
+  s_641bfa56c3c996::t_770a3fbe701fec 12-15
+install.sh
+  s_641bfa56c3c996::t_2e9bf47a0cc795 18,20-24
+  s_641bfa56c3c996::t_7d7f7f7afea38d 105-108,115,129,143-151,153-157
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "a9dc81113ff2f92cdd09473283fc7959c1a6a27e",
+  "prompts": {},
+  "sessions": {
+    "s_641bfa56c3c996": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1675f37d-f023-4923-8edb-55da7f72e211",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "iAmMccc <562863544@qq.com>"
+    }
+  }
+}
