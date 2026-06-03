@@ -15,9 +15,13 @@ BASE_URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 SKILL_NAME="spm-local"
 
 # Skill 文件清单（安装到 AI 工具的 skills 目录）
-FILES="SKILL.md packages.json.example scripts/fetch-packages.sh"
+FILES="SKILL.md packages.json.example scripts/fetch-packages.sh VERSION"
 
-echo "正在安装 ${SKILL_NAME}..."
+# 读取远端版本号
+VERSION=$(curl -sL "${BASE_URL}/VERSION" | head -n1 | tr -d '[:space:]')
+[ -n "$VERSION" ] && VER_LABEL="v${VERSION}" || VER_LABEL="(未知版本)"
+
+echo "正在安装 ${SKILL_NAME} ${VER_LABEL}..."
 
 # 校验仓库可达
 HTTP_CODE=$(curl -sL -o /dev/null -w "%{http_code}" "${BASE_URL}/SKILL.md")
@@ -98,14 +102,17 @@ else
   exit 1
 fi
 
+# 取第一个安装目录作为来源拷贝工作文件
+SRC_DIR=$(echo $SKILL_DIRS | awk '{print $1}')
+VERSION_FILE="Packages/.spm-local-version"
+
 # 在项目根目录初始化 Packages/ 目录
 if [ ! -d "Packages" ]; then
   mkdir -p Packages/Caches Packages/scripts
-  # 取第一个安装目录作为来源拷贝工作文件
-  SRC_DIR=$(echo $SKILL_DIRS | awk '{print $1}')
   cp "${SRC_DIR}/packages.json.example" Packages/packages.json
   cp "${SRC_DIR}/scripts/fetch-packages.sh" Packages/scripts/fetch-packages.sh
   chmod +x Packages/scripts/fetch-packages.sh
+  echo "$VERSION" > "$VERSION_FILE"
 
   if [ -f ".gitignore" ]; then
     if ! grep -q "Packages/Caches" .gitignore 2>/dev/null; then
@@ -119,7 +126,7 @@ if [ ! -d "Packages" ]; then
   fi
 
   echo ""
-  echo "已初始化 Packages/ 目录："
+  echo "已初始化 Packages/ 目录（${VER_LABEL}）："
   echo "  Packages/packages.json              ← 在这里配置依赖"
   echo "  Packages/scripts/fetch-packages.sh  ← 执行下载"
   echo "  Packages/Caches/                    ← 三方库下载目录"
@@ -133,6 +140,19 @@ if [ ! -d "Packages" ]; then
   echo "  2. 执行 ./Packages/scripts/fetch-packages.sh"
   echo "  3. 在 Xcode 中 Add Local 添加 Packages/Caches/ 下的库"
 else
+  # Packages/ 已存在：不动 packages.json，但更新下载脚本到最新版
+  OLD_VERSION=$(cat "$VERSION_FILE" 2>/dev/null | head -n1 | tr -d '[:space:]')
+  [ -n "$OLD_VERSION" ] && OLD_LABEL="v${OLD_VERSION}" || OLD_LABEL="(未知)"
+
+  mkdir -p Packages/scripts
+  cp "${SRC_DIR}/scripts/fetch-packages.sh" Packages/scripts/fetch-packages.sh
+  chmod +x Packages/scripts/fetch-packages.sh
+  echo "$VERSION" > "$VERSION_FILE"
+
   echo ""
-  echo "Packages/ 目录已存在，跳过初始化。"
+  if [ "$OLD_VERSION" = "$VERSION" ]; then
+    echo "Packages/ 已是最新（${VER_LABEL}），下载脚本已确认为最新版。"
+  else
+    echo "Packages/ 已存在：保留你的 packages.json，下载脚本已更新 ${OLD_LABEL} → ${VER_LABEL}。"
+  fi
 fi

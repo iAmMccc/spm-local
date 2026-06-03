@@ -29,6 +29,8 @@ curl -sL https://raw.githubusercontent.com/iAmMccc/spm-local/main/install.sh | b
 
 > 也可以不安装 Skill，纯手动使用：直接把 `scripts/fetch-packages.sh` 和 `packages.json.example` 拷到项目里用即可。
 
+安装时会显示版本号（如 `正在安装 spm-local v1.0.0...`）。重复执行安装命令可升级到最新版：**已存在的 `Packages/` 不会被覆盖，但下载脚本会更新到最新版**，并提示版本变化。运行 `./Packages/scripts/fetch-packages.sh` 时也会在开头打印当前版本，方便确认。
+
 ## 使用
 
 ### 1. 配置依赖清单

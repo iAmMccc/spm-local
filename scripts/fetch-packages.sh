@@ -9,6 +9,10 @@ PACKAGES_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CACHE_DIR="$PACKAGES_ROOT/Caches"
 JSON_FILE="$PACKAGES_ROOT/packages.json"
 
+# 显示当前安装的 spm-local 版本，便于确认是否为最新
+VERSION=$(cat "$PACKAGES_ROOT/.spm-local-version" 2>/dev/null | head -n1 | tr -d '[:space:]')
+[ -n "$VERSION" ] && echo "spm-local v${VERSION}"
+
 # 检查 packages.json
 if [ ! -f "$JSON_FILE" ]; then
   echo "错误: 未找到 $JSON_FILE"
@@ -62,6 +66,9 @@ update_count=0
 fail_count=0
 
 while IFS=$'\t' read -r name url version; do
+  # 跳过空行（packages.json 为空数组时会读到空行）
+  [ -z "$name" ] && [ -z "$url" ] && continue
+
   dir="$CACHE_DIR/$name"
 
   # 情况 1：目录存在但为空 → 删除后重新 clone
