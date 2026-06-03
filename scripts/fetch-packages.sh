@@ -47,6 +47,20 @@ resolve_remote_tag() {
   return 1
 }
 
+# 执行 git clone，把冗长的传输日志压成单行下载百分比
+# git 的进度走 stderr，这里过滤出 "Receiving objects: NN%" 用 \r 原地刷新
+# -c advice.detachedHead=false 关闭切到 tag 时的 detached HEAD 提示
+# 用法: clone_quiet <url> <dir> [额外 clone 参数...]
+clone_quiet() {
+  local url="$1" dir="$2"; shift 2
+  git -c advice.detachedHead=false clone --progress "$@" "$url" "$dir" 2> >(
+    tr '\r' '\n' \
+      | grep --line-buffered -oE 'Receiving objects: *[0-9]+%' \
+      | while IFS= read -r pct; do printf '\r    %s' "$pct"; done
+    printf '\r\033[K'
+  )
+}
+
 # 解析 packages.json
 ENTRIES=$(python3 -c "
 import json, sys
@@ -112,7 +126,7 @@ while IFS=$'\t' read -r name url version; do
     continue
   fi
 
-  # 情况 3：目录不存在 → clone（显示原生进度，避免看起来像卡死）
+  # 情况 3：目录不存在 → clone（单行进度，不刷屏）
   echo "[下载] $name ${version:+$version}"
   if [ -n "$version" ]; then
     # 先解析远端真实 tag 名，再用浅克隆只拉该 tag，不拖全量历史
@@ -122,15 +136,14 @@ while IFS=$'\t' read -r name url version; do
       fail_count=$((fail_count + 1))
       continue
     fi
-    # -c advice.detachedHead=false 关闭切到 tag 时的 detached HEAD 提示
-    if git -c advice.detachedHead=false clone --depth 1 --branch "$tag" "$url" "$name"; then
+    if clone_quiet "$url" "$name" --depth 1 --branch "$tag"; then
       clone_count=$((clone_count + 1))
     else
       echo "  ⚠ clone 失败，请检查网络或 URL"
       fail_count=$((fail_count + 1))
     fi
   else
-    if git clone --depth 1 "$url" "$name"; then
+    if clone_quiet "$url" "$name" --depth 1; then
       clone_count=$((clone_count + 1))
     else
       echo "  ⚠ clone 失败，请检查网络或 URL"
