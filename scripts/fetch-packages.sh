@@ -25,14 +25,23 @@ fi
 mkdir -p "$CACHE_DIR"
 cd "$CACHE_DIR"
 
-# 继承终端代理设置
-if [[ -n "$https_proxy" ]]; then
-  export GIT_HTTP_PROXY="$https_proxy"
-  export GIT_HTTPS_PROXY="$https_proxy"
-fi
-if [[ -n "$http_proxy" ]]; then
-  export GIT_HTTP_PROXY="${GIT_HTTP_PROXY:-$http_proxy}"
-fi
+# 代理：git 通过 libcurl 自动读取环境里的 http_proxy / https_proxy / all_proxy，
+# 脚本继承父 shell 的这些变量即可，无需在此额外设置。
+# 如需访问 GitHub，请先在终端 export 好代理再执行本脚本。
+
+# 解析远端实际的 tag 名（兼容 1.2.3 与 v1.2.3 两种写法）
+# 成功则输出真实 tag 名并返回 0，找不到返回非 0
+resolve_remote_tag() {
+  local url="$1" version="$2" refs
+  refs=$(git ls-remote --tags "$url" 2>/dev/null) || return 1
+  if printf '%s\n' "$refs" | grep -qE "refs/tags/${version}(\^\{\})?$"; then
+    printf '%s' "$version"; return 0
+  fi
+  if printf '%s\n' "$refs" | grep -qE "refs/tags/v${version}(\^\{\})?$"; then
+    printf '%s' "v${version}"; return 0
+  fi
+  return 1
+}
 
 # 解析 packages.json
 ENTRIES=$(python3 -c "
@@ -73,11 +82,18 @@ while IFS=$'\t' read -r name url version; do
         skip_count=$((skip_count + 1))
       else
         echo "[更新] $name $version"
-        if (cd "$dir" && git fetch -q --tags 2>/dev/null && \
-            (git checkout -q "$version" 2>/dev/null || git checkout -q "v${version}" 2>/dev/null)); then
+        tag=$(resolve_remote_tag "$url" "$version" || true)
+        if [ -z "$tag" ]; then
+          echo "  ⚠ 远端找不到版本 $version（已尝试 $version 与 v$version）"
+          fail_count=$((fail_count + 1))
+          continue
+        fi
+        # 只浅取目标 tag，再切过去，不拉全量历史
+        if (cd "$dir" && git fetch --depth 1 origin "refs/tags/${tag}:refs/tags/${tag}" && \
+            git checkout -q "$tag"); then
           update_count=$((update_count + 1))
         else
-          echo "  ⚠ checkout $version 失败"
+          echo "  ⚠ checkout $tag 失败"
           fail_count=$((fail_count + 1))
         fi
       fi
@@ -88,18 +104,24 @@ while IFS=$'\t' read -r name url version; do
     continue
   fi
 
-  # 情况 3：目录不存在 → clone
+  # 情况 3：目录不存在 → clone（显示原生进度，避免看起来像卡死）
   echo "[下载] $name ${version:+$version}"
   if [ -n "$version" ]; then
-    if git clone -q "$url" "$name" 2>/dev/null && \
-       (cd "$name" && (git checkout -q "$version" 2>/dev/null || git checkout -q "v${version}" 2>/dev/null)); then
+    # 先解析远端真实 tag 名，再用浅克隆只拉该 tag，不拖全量历史
+    tag=$(resolve_remote_tag "$url" "$version" || true)
+    if [ -z "$tag" ]; then
+      echo "  ⚠ 远端找不到版本 $version（已尝试 $version 与 v$version）"
+      fail_count=$((fail_count + 1))
+      continue
+    fi
+    if git clone --depth 1 --branch "$tag" "$url" "$name"; then
       clone_count=$((clone_count + 1))
     else
-      echo "  ⚠ clone 或 checkout 失败"
+      echo "  ⚠ clone 失败，请检查网络或 URL"
       fail_count=$((fail_count + 1))
     fi
   else
-    if git clone -q --depth 1 "$url" "$name" 2>/dev/null; then
+    if git clone --depth 1 "$url" "$name"; then
       clone_count=$((clone_count + 1))
     else
       echo "  ⚠ clone 失败，请检查网络或 URL"

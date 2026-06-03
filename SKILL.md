@@ -33,13 +33,20 @@ Packages/
 - `version`：tag 版本号（可选，不填则拉取默认分支最新）
 - 库名自动从 URL 解析
 
+## 关于仓库地址
+
+`url` 必须由用户提供，不要凭记忆猜测。即使是 SnapKit、Kingfisher 等知名库，不同组织、fork、改名都可能导致地址不同，猜错会让 clone 直接失败。
+
+当用户只给出库名（如「添加 SnapKit」）而未提供 url 时，先向用户索取完整仓库地址，确认后再写入 `packages.json`。
+
 ## 执行流程
 
 ### 新增依赖
 
-1. 编辑 `Packages/packages.json`，添加一条记录
-2. 执行 `./Packages/scripts/fetch-packages.sh`
-3. Xcode → File → Add Package Dependencies → Add Local → 选择 `Packages/Caches/` 下对应文件夹
+1. 向用户确认依赖的仓库 url（及可选的 version）
+2. 编辑 `Packages/packages.json`，添加一条记录
+3. 执行 `./Packages/scripts/fetch-packages.sh`
+4. Xcode → File → Add Package Dependencies → Add Local → 选择 `Packages/Caches/` 下对应文件夹
 
 ### 更新版本
 
