@@ -47,18 +47,12 @@ resolve_remote_tag() {
   return 1
 }
 
-# 执行 git clone，把冗长的传输日志压成单行下载百分比
-# git 的进度走 stderr，这里过滤出 "Receiving objects: NN%" 用 \r 原地刷新
+# 执行 git clone，显示 git 原生实时进度（Receiving objects: NN% | KiB/s）
 # -c advice.detachedHead=false 关闭切到 tag 时的 detached HEAD 提示
 # 用法: clone_quiet <url> <dir> [额外 clone 参数...]
 clone_quiet() {
   local url="$1" dir="$2"; shift 2
-  git -c advice.detachedHead=false clone --progress "$@" "$url" "$dir" 2> >(
-    tr '\r' '\n' \
-      | grep --line-buffered -oE 'Receiving objects: *[0-9]+%' \
-      | while IFS= read -r pct; do printf '\r    %s' "$pct"; done
-    printf '\r\033[K'
-  )
+  git -c advice.detachedHead=false clone --progress "$@" "$url" "$dir"
 }
 
 # 解析 packages.json
