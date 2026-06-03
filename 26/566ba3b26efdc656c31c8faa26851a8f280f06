@@ -1,0 +1,22 @@
+scripts/fetch-packages.sh
+  s_641bfa56c3c996::t_ac851d441ac37c 50-63
+  s_641bfa56c3c996::t_c2173698ac93ba 129,139,146
+VERSION
+  ai_agent 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "26566ba3b26efdc656c31c8faa26851a8f280f06",
+  "prompts": {},
+  "sessions": {
+    "s_641bfa56c3c996": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1675f37d-f023-4923-8edb-55da7f72e211",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "iAmMccc <562863544@qq.com>"
+    }
+  }
+}
