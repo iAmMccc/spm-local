@@ -96,8 +96,9 @@ while IFS=$'\t' read -r name url version; do
           continue
         fi
         # 只浅取目标 tag，再切过去，不拉全量历史
+        # -c advice.detachedHead=false 关闭切到 tag 时的 detached HEAD 提示
         if (cd "$dir" && git fetch --depth 1 origin "refs/tags/${tag}:refs/tags/${tag}" && \
-            git checkout -q "$tag"); then
+            git -c advice.detachedHead=false checkout -q "$tag"); then
           update_count=$((update_count + 1))
         else
           echo "  ⚠ checkout $tag 失败"
@@ -121,7 +122,8 @@ while IFS=$'\t' read -r name url version; do
       fail_count=$((fail_count + 1))
       continue
     fi
-    if git clone --depth 1 --branch "$tag" "$url" "$name"; then
+    # -c advice.detachedHead=false 关闭切到 tag 时的 detached HEAD 提示
+    if git -c advice.detachedHead=false clone --depth 1 --branch "$tag" "$url" "$name"; then
       clone_count=$((clone_count + 1))
     else
       echo "  ⚠ clone 失败，请检查网络或 URL"
