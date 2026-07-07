@@ -1,0 +1,41 @@
+packages.json.example
+  s_8dd52883bfd181::t_8b8096f0b1f288 2-3
+install.sh
+  s_8dd52883bfd181::t_7caa2da77d0b4c 18,83,109,122-131,137,143-144,156,161,166,168
+  s_8dd52883bfd181::t_1fb60c2f1a33e3 153
+scripts/fetch-packages.sh
+  s_8dd52883bfd181::t_bab25a3fd8d9d0 4,12,17-19,22
+README.md
+  s_8dd52883bfd181::t_4d6f1494230a9f 32,52,75-76,81
+  s_8dd52883bfd181::t_1fb60c2f1a33e3 55
+  s_8dd52883bfd181::t_67c669417ac72f 28,30
+  s_8dd52883bfd181::t_8b8096f0b1f288 42-43
+  s_8dd52883bfd181::t_b15f0a1f09ccfa 87
+  s_8dd52883bfd181::t_0cc23e2ed0ad6c 82
+SKILL.md
+  s_8dd52883bfd181::t_b15f0a1f09ccfa 40
+  s_8dd52883bfd181::t_1fb60c2f1a33e3 50,56
+  s_8dd52883bfd181::t_4178984f7f00ef 17,64-65,68
+  s_8dd52883bfd181::t_9019ac2588147b 16,18-22
+  s_8dd52883bfd181::t_8b8096f0b1f288 29-30
+spm
+  s_8dd52883bfd181::t_1fb60c2f1a33e3 31,36
+  s_8dd52883bfd181::t_a6849a70313f3f 50
+  s_8dd52883bfd181::t_8616781025688b 1-30,32-35,37-49,51-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a7ae6453e7ec47a76b4690d84ad34bcc0b3b3741",
+  "prompts": {},
+  "sessions": {
+    "s_8dd52883bfd181": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f3bff-ac30-7841-8c46-01a86b2164d2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "iAmMccc <562863544@qq.com>"
+    }
+  }
+}
