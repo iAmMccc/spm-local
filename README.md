@@ -44,7 +44,7 @@ curl -sL https://raw.githubusercontent.com/iAmMccc/spm-local/main/install.sh | b
 ]
 ```
 
-- `url`：仓库地址（必填）
+- `url`：仓库地址（必填项）
 - `version`：tag 版本号（可选，不填则拉取默认分支最新代码）
 
 ### 2. 执行下载
