@@ -1,0 +1,33 @@
+install.sh
+  s_8dd52883bfd181::t_4dd890cfaea532 108-119,125,143,147
+  s_8dd52883bfd181::t_f1b6a101ba9bdd 136
+VERSION
+  s_8dd52883bfd181::t_8fb6738f2dd907 1
+scripts/fetch-packages.sh
+  s_8dd52883bfd181::t_120fd39cbecc69 4-7,15-50,89-109,111-124,131-137,144-146,167-169,178,184-190,201-206,212,225,233-251,257-259,285-289
+  s_8dd52883bfd181::t_7552917f26d408 157-161,171-172
+  s_8dd52883bfd181::t_b0699945183772 110,125-130,138-143
+  s_8dd52883bfd181::t_53107415ea588f 147
+  s_8dd52883bfd181::t_3e9f82907f3822 290
+README.md
+  s_8dd52883bfd181::t_67420fdc9fe8d2 32
+  s_8dd52883bfd181::t_1fe29e515dfeb6 28,71-81,84
+SKILL.md
+  s_8dd52883bfd181::t_fac71faddb9082 20,57-71,79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "b54f56bb0f814d808b9813f03b2ba1e40b7cb5a7",
+  "prompts": {},
+  "sessions": {
+    "s_8dd52883bfd181": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f3bff-ac30-7841-8c46-01a86b2164d2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "iAmMccc <562863544@qq.com>"
+    }
+  }
+}
