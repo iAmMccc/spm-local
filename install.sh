@@ -12,14 +12,91 @@ set -e
 REPO="iAmMccc/spm-local"
 BRANCH="main"
 BASE_URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
+GIT_URL="https://github.com/${REPO}.git"
 SKILL_NAME="spm-local"
 
 # Skill 文件清单（安装到 AI 工具的 skills 目录）
 FILES="SKILL.md packages.json.example scripts/fetch-packages.sh spm VERSION"
 
-# 读取远端版本号
-VERSION=$(curl -sL "${BASE_URL}/VERSION" | head -n1 | tr -d '[:space:]')
-[ -n "$VERSION" ] && VER_LABEL="v${VERSION}" || VER_LABEL="(未知版本)"
+# 版本号以当前 main commit 上的 tag 为准；VERSION 文件只作为记录。
+version_label() {
+  case "$1" in
+    v*) printf '%s' "$1" ;;
+    *) printf 'v%s' "$1" ;;
+  esac
+}
+
+resolve_tag_version() {
+  local head_sha refs
+  head_sha=$(git ls-remote --heads "$GIT_URL" "$BRANCH" 2>/dev/null | awk '{print $1; exit}') || return 1
+  [ -n "$head_sha" ] || return 1
+
+  refs=$(git ls-remote --tags "$GIT_URL" 2>/dev/null) || return 1
+  printf '%s\n' "$refs" | awk -v head="$head_sha" '
+    function clean_tag(ref) {
+      sub("^refs/tags/", "", ref)
+      sub("\\^\\{\\}$", "", ref)
+      return ref
+    }
+
+    function semver_key(tag, parts, count, i, key, version) {
+      version = tag
+      sub("^v", "", version)
+      count = split(version, parts, ".")
+      key = ""
+
+      for (i = 1; i <= 4; i++) {
+        if (i <= count && parts[i] ~ /^[0-9]+$/) {
+          key = key sprintf("%08d", parts[i])
+        } else if (i <= count) {
+          return ""
+        } else {
+          key = key sprintf("%08d", 0)
+        }
+      }
+
+      return key
+    }
+
+    $1 == head {
+      tag = clean_tag($2)
+      key = semver_key(tag)
+      if (key != "" && key >= best_key) {
+        best_key = key
+        best_tag = tag
+      }
+    }
+
+    END {
+      if (best_tag != "") {
+        print best_tag
+      }
+    }
+  '
+}
+
+if ! command -v git >/dev/null 2>&1; then
+  echo "错误: 需要 git 来解析远端版本 tag"
+  exit 1
+fi
+
+set +e
+VERSION=$(resolve_tag_version)
+RESOLVE_STATUS=$?
+set -e
+
+if [ "$RESOLVE_STATUS" -ne 0 ]; then
+  echo "错误: 无法读取远端 ${REPO} 的 main 或 tags"
+  echo "请检查网络、代理或仓库权限"
+  exit 1
+fi
+
+if [ -z "$VERSION" ]; then
+  echo "错误: 远端 ${BRANCH} 当前 commit 没有对应的版本 tag"
+  echo "请先给 ${BRANCH} 当前 commit 打 tag 并推送，例如：git tag 1.1.1 && git push origin 1.1.1"
+  exit 1
+fi
+VER_LABEL=$(version_label "$VERSION")
 
 echo "正在安装 ${SKILL_NAME} ${VER_LABEL}..."
 
@@ -80,6 +157,9 @@ for SKILL_DIR in $SKILL_DIRS; do
       echo "  下载失败: ${file}"
       fail=1
     else
+      if [ "$file" = "VERSION" ] && [ -n "$VERSION" ]; then
+        echo "$VERSION" > "${SKILL_DIR}/${file}"
+      fi
       if [[ "$file" == *.sh ]] || [ "$file" = "spm" ]; then
         chmod +x "${SKILL_DIR}/${file}"
       fi
