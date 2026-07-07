@@ -1,0 +1,23 @@
+install.sh
+  s_8dd52883bfd181::t_c7ef2e0d9f9be4 21,95-97,99
+  s_8dd52883bfd181::t_4b0d465ab17671 15,22-29,31-33,36-76,93-94,98,160-162
+  s_8dd52883bfd181::t_3504c0fcc238e7 30,34-35,77-92
+README.md
+  s_8dd52883bfd181::t_5a6d475a2ef4b5 32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "5eb7768f39ff7d1cbaccfcc3c8830e207f62ad9f",
+  "prompts": {},
+  "sessions": {
+    "s_8dd52883bfd181": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f3bff-ac30-7841-8c46-01a86b2164d2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "iAmMccc <562863544@qq.com>"
+    }
+  }
+}
