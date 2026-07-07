@@ -1,10 +1,7 @@
 #!/bin/bash
 # SPM 本地依赖下载脚本
 # 读取 packages.json，将三方库 clone 到 Packages/Caches/
-# 用法:
-#   ./Packages/scripts/fetch-packages.sh
-#   ./Packages/scripts/fetch-packages.sh update all
-#   ./Packages/scripts/fetch-packages.sh update <库名>
+# 内部脚本，请通过项目根目录的 ./spm 命令调用。
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -12,17 +9,17 @@ PACKAGES_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 CACHE_DIR="$PACKAGES_ROOT/Caches"
 JSON_FILE="$PACKAGES_ROOT/packages.json"
 
-MODE="sync"
+MODE="install"
 TARGET_NAME=""
 
 usage() {
   echo "用法:"
-  echo "  ./Packages/scripts/fetch-packages.sh"
-  echo "  ./Packages/scripts/fetch-packages.sh update all"
-  echo "  ./Packages/scripts/fetch-packages.sh update <库名>"
+  echo "  ./spm install"
+  echo "  ./spm update"
+  echo "  ./spm update <库名>"
   echo ""
   echo "说明:"
-  echo "  无参数：下载缺失依赖；已写 version 的依赖会同步到指定 tag；未写 version 的已有依赖会跳过。"
+  echo "  install：下载缺失依赖；已写 version 的依赖会同步到指定 tag；未写 version 的已有依赖会跳过。"
   echo "  update：不修改 packages.json。已写 version 的依赖同步到指定 tag；未写 version 的依赖更新到远端默认分支最新。"
   echo "  update 会覆盖 Packages/Caches/ 下对应库的本地未提交改动。"
 }

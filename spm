@@ -1,0 +1,71 @@
+#!/bin/bash
+# spm-local project CLI
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+find_project_root() {
+  local dir="$1"
+  while [ "$dir" != "/" ]; do
+    if [ -f "$dir/Packages/scripts/fetch-packages.sh" ]; then
+      printf '%s' "$dir"
+      return 0
+    fi
+    dir=$(dirname "$dir")
+  done
+  return 1
+}
+
+PROJECT_ROOT=$(find_project_root "$SCRIPT_DIR" || find_project_root "$(pwd)" || true)
+
+if [ -z "$PROJECT_ROOT" ]; then
+  echo "错误: 未找到 Packages/scripts/fetch-packages.sh"
+  echo "请在已初始化 spm-local 的项目目录中执行。"
+  exit 1
+fi
+
+FETCH_SCRIPT="$PROJECT_ROOT/Packages/scripts/fetch-packages.sh"
+
+usage() {
+  echo "用法:"
+  echo "  ./spm install"
+  echo "  ./spm update"
+  echo "  ./spm update <库名>"
+  echo ""
+  echo "说明:"
+  echo "  install：下载缺失依赖；已写 version 的依赖会同步到指定 tag；未写 version 的已有依赖会跳过。"
+  echo "  update：更新所有依赖；已写 version 的依赖同步到指定 tag；未写 version 的依赖更新到远端默认分支最新。"
+  echo "  update <库名>：只更新指定依赖。"
+}
+
+if [ "$#" -eq 0 ]; then
+  usage
+  exit 0
+fi
+
+case "$1" in
+  -h|--help|help)
+    usage
+    ;;
+  install)
+    if [ "$#" -ne 1 ]; then
+      usage
+      exit 1
+    fi
+    "$FETCH_SCRIPT"
+    ;;
+  update)
+    if [ "$#" -eq 1 ]; then
+      "$FETCH_SCRIPT" update all
+    elif [ "$#" -eq 2 ]; then
+      "$FETCH_SCRIPT" update "$2"
+    else
+      usage
+      exit 1
+    fi
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+esac

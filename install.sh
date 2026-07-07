@@ -15,7 +15,7 @@ BASE_URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 SKILL_NAME="spm-local"
 
 # Skill 文件清单（安装到 AI 工具的 skills 目录）
-FILES="SKILL.md packages.json.example scripts/fetch-packages.sh VERSION"
+FILES="SKILL.md packages.json.example scripts/fetch-packages.sh spm VERSION"
 
 # 读取远端版本号
 VERSION=$(curl -sL "${BASE_URL}/VERSION" | head -n1 | tr -d '[:space:]')
@@ -80,7 +80,7 @@ for SKILL_DIR in $SKILL_DIRS; do
       echo "  下载失败: ${file}"
       fail=1
     else
-      if [[ "$file" == *.sh ]]; then
+      if [[ "$file" == *.sh ]] || [ "$file" = "spm" ]; then
         chmod +x "${SKILL_DIR}/${file}"
       fi
     fi
@@ -106,6 +106,7 @@ fi
 SRC_DIR=$(echo $SKILL_DIRS | awk '{print $1}')
 VERSION_FILE="Packages/.spm-local-version"
 FETCH_SCRIPT="Packages/scripts/fetch-packages.sh"
+SPM_CLI="spm"
 
 install_fetch_script() {
   mkdir -p Packages/scripts
@@ -118,17 +119,29 @@ install_fetch_script() {
   chmod +x "$FETCH_SCRIPT"
 }
 
+install_spm_cli() {
+  if [ -d "$SPM_CLI" ]; then
+    echo "错误: $SPM_CLI 是目录，无法覆盖为命令脚本"
+    exit 1
+  fi
+  rm -f "$SPM_CLI"
+  cp -f "${SRC_DIR}/spm" "$SPM_CLI"
+  chmod +x "$SPM_CLI"
+}
+
 # 在项目根目录初始化 Packages/ 目录
 if [ ! -d "Packages" ]; then
   mkdir -p Packages/Caches Packages/scripts
   cp "${SRC_DIR}/packages.json.example" Packages/packages.json
   install_fetch_script
+  install_spm_cli
   echo "$VERSION" > "$VERSION_FILE"
 
   echo ""
   echo "已初始化 Packages/ 目录（${VER_LABEL}）："
   echo "  Packages/packages.json              ← 在这里配置依赖"
-  echo "  Packages/scripts/fetch-packages.sh  ← 执行下载"
+  echo "  spm                                  ← 项目内命令入口"
+  echo "  Packages/scripts/fetch-packages.sh  ← 底层下载脚本"
   echo "  Packages/Caches/                    ← 三方库下载目录"
   echo ""
   echo "说明："
@@ -137,20 +150,21 @@ if [ ! -d "Packages" ]; then
   echo ""
   echo "下一步："
   echo "  1. 编辑 Packages/packages.json，添加你的依赖"
-  echo "  2. 执行 ./Packages/scripts/fetch-packages.sh"
+  echo "  2. 执行 ./spm install"
   echo "  3. 在 Xcode 中 Add Local 添加 Packages/Caches/ 下的库"
 else
-  # Packages/ 已存在：不动 packages.json，但强制覆盖下载脚本到最新版
+  # Packages/ 已存在：不动 packages.json，但强制覆盖命令入口和下载脚本到最新版
   OLD_VERSION=$(cat "$VERSION_FILE" 2>/dev/null | head -n1 | tr -d '[:space:]')
   [ -n "$OLD_VERSION" ] && OLD_LABEL="v${OLD_VERSION}" || OLD_LABEL="(未知)"
 
   install_fetch_script
+  install_spm_cli
   echo "$VERSION" > "$VERSION_FILE"
 
   echo ""
   if [ "$OLD_VERSION" = "$VERSION" ]; then
-    echo "Packages/ 已是最新（${VER_LABEL}），下载脚本已确认为最新版。"
+    echo "Packages/ 已是最新（${VER_LABEL}），命令入口和下载脚本已确认为最新版。"
   else
-    echo "Packages/ 已存在：保留你的 packages.json，下载脚本已更新 ${OLD_LABEL} → ${VER_LABEL}。"
+    echo "Packages/ 已存在：保留你的 packages.json，命令入口和下载脚本已更新 ${OLD_LABEL} → ${VER_LABEL}。"
   fi
 fi
