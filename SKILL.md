@@ -17,7 +17,7 @@ Packages/
 ├── packages.json              # 依赖清单（URL + 版本）
 ├── scripts/
 │   └── fetch-packages.sh      # 下载/更新脚本
-└── Caches/                    # 下载的三方库（gitignore）
+└── Caches/                    # 下载的三方库
 ```
 
 ## 依赖清单格式
@@ -54,6 +54,21 @@ Packages/
 2. 执行 `./Packages/scripts/fetch-packages.sh`
 3. Xcode → File → Packages → Resolve Package Versions
 
+### 更新到最新
+
+当用户要把未写明确 `version` 的依赖更新到远端默认分支最新时，不需要修改 `packages.json`：
+
+```bash
+./Packages/scripts/fetch-packages.sh update all
+./Packages/scripts/fetch-packages.sh update <库名>
+```
+
+- `update all`：刷新清单中的所有依赖
+- `update <库名>`：只刷新指定依赖，库名来自 URL 末尾（例如 SnapKit）
+- 已写 `version` 的依赖会同步到清单指定 tag
+- 未写 `version` 的依赖会更新到远端默认分支最新
+- 更新时把 `Packages/Caches/` 下对应库当作可再生成缓存，不检查 dirty 状态，直接覆盖本地未提交改动
+
 ## 脚本逻辑
 
 1. 读取 `packages.json`，逐条处理
@@ -61,5 +76,5 @@ Packages/
 3. 判断 `Caches/` 下是否已存在该库：
    - **不存在** → clone（指定版本则完整 clone + checkout，否则浅克隆）
    - **存在但为空目录** → 删除后重新 clone
-   - **存在且有内容** → 指定了版本则 fetch + checkout，否则 skip
+   - **存在且有内容** → 指定了版本则 fetch + checkout；未指定版本默认 skip，执行 `update` 时 fetch 远端默认分支并强制覆盖本地缓存
 4. 完成后输出汇总

@@ -105,25 +105,25 @@ fi
 # 取第一个安装目录作为来源拷贝工作文件
 SRC_DIR=$(echo $SKILL_DIRS | awk '{print $1}')
 VERSION_FILE="Packages/.spm-local-version"
+FETCH_SCRIPT="Packages/scripts/fetch-packages.sh"
+
+install_fetch_script() {
+  mkdir -p Packages/scripts
+  if [ -d "$FETCH_SCRIPT" ]; then
+    echo "错误: $FETCH_SCRIPT 是目录，无法覆盖为脚本"
+    exit 1
+  fi
+  rm -f "$FETCH_SCRIPT"
+  cp -f "${SRC_DIR}/scripts/fetch-packages.sh" "$FETCH_SCRIPT"
+  chmod +x "$FETCH_SCRIPT"
+}
 
 # 在项目根目录初始化 Packages/ 目录
 if [ ! -d "Packages" ]; then
   mkdir -p Packages/Caches Packages/scripts
   cp "${SRC_DIR}/packages.json.example" Packages/packages.json
-  cp "${SRC_DIR}/scripts/fetch-packages.sh" Packages/scripts/fetch-packages.sh
-  chmod +x Packages/scripts/fetch-packages.sh
+  install_fetch_script
   echo "$VERSION" > "$VERSION_FILE"
-
-  if [ -f ".gitignore" ]; then
-    if ! grep -q "Packages/Caches" .gitignore 2>/dev/null; then
-      echo "" >> .gitignore
-      echo "# SPM 本地缓存（三方库源码不提交）" >> .gitignore
-      echo "Packages/Caches/" >> .gitignore
-    fi
-  else
-    echo "# SPM 本地缓存（三方库源码不提交）" > .gitignore
-    echo "Packages/Caches/" >> .gitignore
-  fi
 
   echo ""
   echo "已初始化 Packages/ 目录（${VER_LABEL}）："
@@ -133,20 +133,18 @@ if [ ! -d "Packages" ]; then
   echo ""
   echo "说明："
   echo "  通过终端将 SPM 三方库下载到本地，在 Xcode 中以 Add Local 方式引入。"
-  echo "  Packages/Caches/ 已自动添加到 .gitignore，三方库源码不会被提交。"
+  echo "  是否提交 Packages/Caches/ 由业务方自行决定，安装脚本不会修改 .gitignore。"
   echo ""
   echo "下一步："
   echo "  1. 编辑 Packages/packages.json，添加你的依赖"
   echo "  2. 执行 ./Packages/scripts/fetch-packages.sh"
   echo "  3. 在 Xcode 中 Add Local 添加 Packages/Caches/ 下的库"
 else
-  # Packages/ 已存在：不动 packages.json，但更新下载脚本到最新版
+  # Packages/ 已存在：不动 packages.json，但强制覆盖下载脚本到最新版
   OLD_VERSION=$(cat "$VERSION_FILE" 2>/dev/null | head -n1 | tr -d '[:space:]')
   [ -n "$OLD_VERSION" ] && OLD_LABEL="v${OLD_VERSION}" || OLD_LABEL="(未知)"
 
-  mkdir -p Packages/scripts
-  cp "${SRC_DIR}/scripts/fetch-packages.sh" Packages/scripts/fetch-packages.sh
-  chmod +x Packages/scripts/fetch-packages.sh
+  install_fetch_script
   echo "$VERSION" > "$VERSION_FILE"
 
   echo ""
